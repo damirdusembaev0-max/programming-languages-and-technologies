@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вариант 11 — Запись к врачу</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Запись на прием к врачу</h2>
+    <form id="doctorForm" novalidate>
+      <div class="form-group">
+        <label for="fullname">ФИО пациента:</label>
+        <input type="text" id="fullname" placeholder="Петров Петр Петрович">
+        <span class="error-message" id="fullnameError"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="specialty">Специальность врача:</label>
+        <select id="specialty">
+          <option value="">-- Выберите специальность --</option>
+          <option value="therapist">Терапевт</option>
+          <option value="dentist">Стоматолог</option>
+          <option value="neurologist">Невролог</option>
+        </select>
+        <span class="error-message" id="specialtyError"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="date">Дата приема:</label>
+        <input type="date" id="date">
+        <span class="error-message" id="dateError"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="time">Время приема:</label>
+        <input type="time" id="time">
+        <span class="error-message" id="timeError"></span>
+      </div>
+
+      <div class="form-group">
+        <label>Тип приема:</label>
+        <div>
+          <label><input type="radio" name="visitType" value="primary"> Первичный</label>
+          <label><input type="radio" name="visitType" value="secondary"> Повторный</label>
+        </div>
+        <span class="error-message" id="visitTypeError"></span>
+      </div>
+
+      <button type="submit">Записаться</button>
+    </form>
+    <div id="result" class="result-message"></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

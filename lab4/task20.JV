@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрация</title>
+</head>
+<body>
+
+<h2>Мини-мастер регистрации</h2>
+
+<form>
+
+   <h3>Личные данные</h3>
+
+    <label>ФИО:</label><br>
+    <input type="text" placeholder="Введите ФИО"><br><br>
+
+    <label>Возраст:</label><br>
+    <input type="number" placeholder="Введите возраст"><br><br>
+
+    <h3>Параметры аккаунта</h3>
+
+    <label>Логин:</label><br>
+    <input type="text" placeholder="Введите логин"><br><br>
+
+    <label>Пароль:</label><br>
+    <input type="password" placeholder="Введите пароль"><br><br>
+
+    <button type="submit">Зарегистрироваться</button>
+
+</form>
+
+<h3>Итоговое резюме</h3>
+
+<p>Личные данные и параметры аккаунта заполнены.</p>
+
+</body>
+</html>
