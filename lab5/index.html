@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Менеджер задач</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 40px 15px;
+        }
+
+        .card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 520px;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #4a90e2;
+        }
+
+        .btn-add {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-add:hover {
+            background-color: #357abd;
+        }
+
+        .error-text {
+            color: #e74c3c;
+            font-size: 13px;
+            min-height: 18px;
+            margin-top: -4px;
+        }
+
+        .task-list {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .task-item.is-done {
+            background-color: #eef9f1;
+            border-color: #c3e6cb;
+        }
+
+        .task-item.is-done .task-title {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+
+        .task-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .task-content input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .btn-remove {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .btn-remove:hover {
+            background-color: #ffe6e6;
+        }
+
+        .stats-panel {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 2px dashed #e9ecef;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .stats-panel span {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Мои Задачи</h2>
+
+    <div class="controls">
+        <div class="input-group">
+            <input type="text" id="new-task-input" placeholder="Что нужно сделать?">
+            <button class="btn-add" id="btn-add-task">Добавить</button>
+        </div>
+        <p class="error-text" id="error-message"></p>
+
+        <input type="text" id="search-task-input" placeholder="Фильтр по названию...">
+    </div>
+
+    <ul class="task-list" id="todo-list"></ul>
+
+    <div class="stats-panel">
+        <div>Готово: <span id="stat-completed">0</span></div>
+        <div>Осталось: <span id="stat-pending">0</span></div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
