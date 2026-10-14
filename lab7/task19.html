@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вариант 19 - База знаний</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
+        .app-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        header { margin-bottom: 20px; }
+        .nav-menu { display: flex; gap: 10px; margin-top: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .nav-btn { padding: 10px 20px; border: none; background: #e0e0e0; cursor: pointer; border-radius: 4px; font-weight: bold; transition: background 0.3s; }
+        .nav-btn:hover { background: #d0d0d0; }
+        .nav-btn.active { background: #6f42c1; color: white; }
+        main { min-height: 200px; }
+        .card { background: #f9f9f9; padding: 15px; margin-bottom: 12px; border-radius: 5px; border-left: 4px solid #6f42c1; }
+        .card h3 { margin-bottom: 5px; }
+        button.fav-btn { margin-top: 8px; padding: 6px 12px; background: #6f42c1; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button.fav-btn:hover { background: #5a32a3; }
+        .status-msg { font-style: italic; color: #555; padding: 15px 0; }
+        @media (max-width: 600px) { .nav-menu { flex-direction: column; } .nav-btn { width: 100%; text-align: center; } }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>SPA База знаний</h1>
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-page="articles">Статьи</button>
+                <button class="nav-btn" data-page="categories">Категории</button>
+                <button class="nav-btn" data-page="favorites">Избранное</button>
+            </nav>
+        </header>
+        <main id="content" aria-live="polite"></main>
+    </div>
+
+    <script>
+        const mockServerData = [
+            { id: 1, title: "Управление DOM в JavaScript", category: "JavaScript", body: "Интерфейс DOM позволяет динамически создавать, удалять и модифицировать узлы HTML-страницы." },
+            { id: 2, title: "Стилизация с помощью CSS Flexbox", category: "CSS", body: "Flexbox предоставляет эффективный способ организации пространства и выравнивания элементов." },
+            { id: 3, title: "Асинхронные запросы через Fetch API", category: "JavaScript", body: "Функция fetch() дает возможность отправлять HTTP-запросы на сервер и обрабатывать полученные данные." }
+        ];
+
+        let articles = [];
+        let favorites = [];
+        let currentTab = "articles";
+
+        const content = document.querySelector("#content");
+        const buttons = document.querySelectorAll("[data-page]");
+
+        async function loadData() {
+            content.innerHTML = '<div class="status-msg">Загрузка данных с сервера...</div>';
+            try {
+                // Имитируем сетевую задержку для демонстрации состояния загрузки
+                await new Promise(resolve => setTimeout(resolve, 600));
+                
+                // В реальном проекте здесь был бы fetch("articles.json")
+                articles = mockServerData;
+                render();
+            } catch (error) {
+                content.innerHTML = `<div class="status-msg" style="color: red;">Ошибка загрузки: ${error.message}</div>`;
+            }
+        }
+
+        function render() {
+            content.innerHTML = "";
+
+            if (currentTab === "articles") {
+                const title = document.createElement("h2");
+                title.textContent = "Список статей";
+                title.style.marginBottom = "15px";
+                content.appendChild(title);
+
+                articles.forEach(art => {
+                    const card = document.createElement("div");
+                    card.className = "card";
+                    
+                    const h3 = document.createElement("h3");
+                    h3.textContent = art.title;
+                    
+                    const p = document.createElement("p");
+                    p.textContent = art.body;
+
+                    const btn = document.createElement("button");
+                    btn.className = "fav-btn";
+                    const isFav = favorites.includes(art.id);
+                    btn.textContent = isFav ? "Убрать из избранного" : "В избранное";
+
+                    btn.addEventListener("click", () => {
+                        if (isFav) {
+                            favorites = favorites.filter(id => id !== art.id);
+                        } else {
+                            favorites.push(art.id);
+                        }
+                        render();
+                    });
+
+                    card.append(h3, p, btn);
+                    content.appendChild(card);
+                });
+
+            } else if (currentTab === "categories") {
+                const title = document.createElement("h2");
+                title.textContent = "Категории";
+                title.style.marginBottom = "15px";
+                content.appendChild(title);
+
+                const categories = [...new Set(articles.map(a => a.category))];
+                categories.forEach(cat => {
+                    const card = document.createElement("div");
+                    card.className = "card";
+                    const count = articles.filter(a => a.category === cat).length;
+                    card.innerHTML = `<h3>Категория: ${cat}</h3><p>Количество материалов: ${count}</p>`;
+                    content.appendChild(card);
+                });
+
+            } else if (currentTab === "favorites") {
+                const title = document.createElement("h2");
+                title.textContent = "Избранные статьи";
+                title.style.marginBottom = "15px";
+                content.appendChild(title);
+
+                const favList = articles.filter(a => favorites.includes(a.id));
+                if (favList.length === 0) {
+                    const p = document.createElement("p");
+                    p.textContent = "Список избранного пуст.";
+                    content.appendChild(p);
+                } else {
+                    favList.forEach(art => {
+                        const card = document.createElement("div");
+                        card.className = "card";
+                        card.innerHTML = `<h3>${art.title}</h3><p>${art.body}</p>`;
+                        content.appendChild(card);
+                    });
+                }
+            }
+        }
+
+        buttons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                buttons.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                currentTab = btn.dataset.page;
+                if (articles.length > 0) render();
+            });
+        });
+
+        loadData();
+    </script>
+</body>
+</html>
