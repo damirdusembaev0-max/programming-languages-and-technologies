@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Задание 14 — Викторина</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .card { background: #1e293b; width: 100%; max-width: 480px; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); border: 1px solid #334155; }
+    h2 { margin-top: 0; font-size: 1.4rem; color: #38bdf8; text-align: center; }
+    .score-box { background: #0f172a; padding: 10px 15px; border-radius: 8px; border: 1px solid #334155; text-align: center; font-weight: 600; color: #34d399; margin-bottom: 20px; }
+    .question { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; line-height: 1.4; }
+    .option-btn { width: 100%; padding: 12px; margin-bottom: 8px; background: #0f172a; border: 1px solid #475569; border-radius: 8px; color: #fff; text-align: left; cursor: pointer; font-size: 1rem; transition: all 0.2s; }
+    .option-btn:hover { background: #334155; border-color: #38bdf8; }
+    .reset-btn { width: 100%; margin-top: 20px; background: #475569; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .reset-btn:hover { background: #64748b; }
+    .finish-text { text-align: center; font-size: 1.2rem; margin: 30px 0; color: #38bdf8; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function App() {
+      const LOCAL_BEST_KEY = 'lab8_quiz_best_score';
+      const SESSION_PROGRESS_KEY = 'lab8_quiz_progress';
+
+      const questions = [
+        { question: "Что возвращает typeof null в JavaScript?", options: ["'null'", "'object'", "'undefined'", "'number'"], answerIndex: 1 },
+        { question: "Какой метод преобразует объект в JSON-строку?", options: ["JSON.parse()", "JSON.toText()", "JSON.stringify()", "Object.toJSON()"], answerIndex: 2 },
+        { question: "Какое хранилище очищается при закрытии вкладки?", options: ["localStorage", "sessionStorage", "IndexedDB", "Cookie"], answerIndex: 1 }
+      ];
+
+      const [bestScore, setBestScore] = useState(() => {
+        try { return parseInt(localStorage.getItem(LOCAL_BEST_KEY) || '0', 10); } catch { return 0; }
+      });
+
+      const [state, setState] = useState(() => {
+        try {
+          const raw = sessionStorage.getItem(SESSION_PROGRESS_KEY);
+          if (raw) return JSON.parse(raw);
+        } catch {}
+        return { currentQuestionIndex: 0, score: 0 };
+      });
+
+      useEffect(() => {
+        sessionStorage.setItem(SESSION_PROGRESS_KEY, JSON.stringify(state));
+      }, [state]);
+
+      const handleAnswer = (idx) => {
+        const q = questions[state.currentQuestionIndex];
+        let newScore = state.score;
+        if (idx === q.answerIndex) newScore++;
+        
+        const nextIndex = state.currentQuestionIndex + 1;
+        setState({ currentQuestionIndex: nextIndex, score: newScore });
+
+        if (nextIndex >= questions.length && newScore > bestScore) {
+          setBestScore(newScore);
+          localStorage.setItem(LOCAL_BEST_KEY, newScore.toString());
+        }
+      };
+
+      const isFinished = state.currentQuestionIndex >= questions.length;
+
+      return (
+        <div className="card">
+          <h2>🧠 Викторина по JS</h2>
+          <div className="score-box">Лучший рекорд: {bestScore} / {questions.length}</div>
+          
+          {!isFinished ? (
+            <div>
+              <div className="question">Вопрос {state.currentQuestionIndex + 1} из {questions.length}:<br/>{questions[state.currentQuestionIndex].question}</div>
+              {questions[state.currentQuestionIndex].options.map((opt, idx) => (
+                <button key={idx} className="option-btn" onClick={() => handleAnswer(idx)}>
+                  {opt}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <div className="finish-text">
+                Викторина завершена!<br/>
+                Ваш результат: <strong>{state.score}</strong> из {questions.length}
+              </div>
+            </div>
+          )}
+
+          <button className="reset-btn" onClick={() => setState({ currentQuestionIndex: 0, score: 0 })}>
+            Начать заново (Сброс сессии)
+          </button>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
