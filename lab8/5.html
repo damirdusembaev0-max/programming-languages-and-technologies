@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Задание 5 — Избранные книги</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .card { background: #1e293b; width: 100%; max-width: 450px; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); border: 1px solid #334155; }
+    h2 { margin-top: 0; font-size: 1.5rem; color: #38bdf8; text-align: center; margin-bottom: 20px; }
+    input { width: 100%; padding: 12px; margin-bottom: 12px; background: #0f172a; border: 1px solid #475569; border-radius: 8px; color: #fff; font-size: 1rem; outline: none; transition: border-color 0.2s; }
+    input:focus { border-color: #38bdf8; }
+    button.btn-add { width: 100%; padding: 12px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+    button.btn-add:hover { background: #0369a1; }
+    ul { list-style: none; padding: 0; margin-top: 20px; max-height: 250px; overflow-y: auto; }
+    li { background: #0f172a; border: 1px solid #334155; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; }
+    .del-btn { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; }
+    .del-btn:hover { background: #dc2626; }
+    .empty { text-align: center; color: #94a3b8; font-style: italic; margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function App() {
+      const STORAGE_KEY = 'lab8_favorite_books';
+      const [books, setBooks] = useState(() => {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          const parsed = raw ? JSON.parse(raw) : [];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch { return []; }
+      });
+
+      const [title, setTitle] = useState('');
+      const [author, setAuthor] = useState('');
+
+      useEffect(() => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+      }, [books]);
+
+      const addBook = (e) => {
+        e.preventDefault();
+        if (!title.trim() || !author.trim()) return alert('Заполните оба поля!');
+        setBooks([...books, { title: title.trim(), author: author.trim() }]);
+        setTitle('');
+        setAuthor('');
+      };
+
+      return (
+        <div className="card">
+          <h2>📚 Избранные книги</h2>
+          <form onSubmit={addBook}>
+            <input type="text" placeholder="Название книги" value={title} onChange={e => setTitle(e.target.value)} />
+            <input type="text" placeholder="Автор" value={author} onChange={e => setAuthor(e.target.value)} />
+            <button className="btn-add" type="submit">Добавить книгу</button>
+          </form>
+          {books.length === 0 ? (
+            <div className="empty">Список пуст. Добавьте первую книгу!</div>
+          ) : (
+            <ul>
+              {books.map((b, i) => (
+                <li key={i}>
+                  <span><strong>{b.title}</strong> — <em>{b.author}</em></span>
+                  <button className="del-btn" onClick={() => setBooks(books.filter((_, idx) => idx !== i))}>Удалить</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
