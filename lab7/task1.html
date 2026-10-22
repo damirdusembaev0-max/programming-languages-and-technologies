@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вариант 1 - Визитка студента</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
+        .app-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        header { margin-bottom: 20px; }
+        .nav-menu { display: flex; gap: 10px; margin-top: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .nav-btn { padding: 10px 20px; border: none; background: #e0e0e0; cursor: pointer; border-radius: 4px; font-weight: bold; transition: background 0.3s; }
+        .nav-btn:hover { background: #d0d0d0; }
+        .nav-btn.active { background: #007bff; color: white; }
+        main { min-height: 200px; }
+        .card { background: #f9f9f9; padding: 15px; margin-top: 10px; border-radius: 5px; border-left: 4px solid #007bff; }
+        @media (max-width: 600px) { .nav-menu { flex-direction: column; } .nav-btn { width: 100%; text-align: center; } }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>SPA Визитка студента</h1>
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-page="about">О себе</button>
+                <button class="nav-btn" data-page="skills">Навыки</button>
+                <button class="nav-btn" data-page="contacts">Контакты</button>
+            </nav>
+        </header>
+        <main id="content" aria-live="polite"></main>
+    </div>
+
+    <script>
+        const pagesData = {
+            about: { title: "О себе", text: "Привет! Я студент первого курса, обучаюсь по направлению «Информационные системы» в АТУ. Увлекаюсь веб-разработкой и созданием SPA-приложений без фреймворков." },
+            skills: { title: "Мои навыки", text: "Стек технологий: HTML5, CSS3, JavaScript (DOM, события, асинхронность), Git/GitHub, основы Python и реляционных баз данных." },
+            contacts: { title: "Контакты", text: "Email: student@atu.kz | Город: Алматы | GitHub: @student-is" }
+        };
+
+        const content = document.querySelector("#content");
+        const buttons = document.querySelectorAll("[data-page]");
+
+        function renderPage(pageKey) {
+            const data = pagesData[pageKey];
+            if (!data) return;
+            content.innerHTML = "";
+            
+            const card = document.createElement("div");
+            card.className = "card";
+            
+            const h2 = document.createElement("h2");
+            h2.textContent = data.title;
+            
+            const p = document.createElement("p");
+            p.textContent = data.text;
+            p.style.marginTop = "10px";
+
+            card.append(h2, p);
+            content.appendChild(card);
+        }
+
+        buttons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                buttons.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                renderPage(btn.dataset.page);
+            });
+        });
+
+        renderPage("about");
+    </script>
+</body>
+</html>

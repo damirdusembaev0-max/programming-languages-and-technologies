@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вариант 8 - Список задач</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
+        .app-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        header { margin-bottom: 20px; }
+        .nav-menu { display: flex; gap: 10px; margin-top: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .nav-btn { padding: 10px 20px; border: none; background: #e0e0e0; cursor: pointer; border-radius: 4px; font-weight: bold; transition: background 0.3s; }
+        .nav-btn:hover { background: #d0d0d0; }
+        .nav-btn.active { background: #28a745; color: white; }
+        main { min-height: 200px; }
+        .task-card { background: #f9f9f9; padding: 12px 15px; margin-bottom: 10px; border-radius: 5px; border-left: 4px solid #28a745; display: flex; justify-content: space-between; align-items: center; }
+        .form-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        input[type="text"] { flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; }
+        button.add-btn { padding: 8px 15px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button.action-btn { padding: 5px 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        @media (max-width: 600px) { .nav-menu { flex-direction: column; } .nav-btn { width: 100%; text-align: center; } }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>SPA Список задач</h1>
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-page="all">Все</button>
+                <button class="nav-btn" data-page="active">Активные</button>
+                <button class="nav-btn" data-page="completed">Выполненные</button>
+            </nav>
+        </header>
+        <main id="content" aria-live="polite"></main>
+    </div>
+
+    <script>
+        let tasks = [
+            { id: 1, text: "Сдать лабораторную работу №7", completed: false },
+            { id: 2, text: "Подготовиться к защите проекта", completed: true },
+            { id: 3, text: "Купить учебные материалы", completed: false }
+        ];
+
+        let currentFilter = "all";
+        const content = document.querySelector("#content");
+        const buttons = document.querySelectorAll("[data-page]");
+
+        function renderApp() {
+            content.innerHTML = "";
+
+            // Форма добавления
+            const form = document.createElement("form");
+            form.className = "form-group";
+            form.innerHTML = `
+                <input type="text" id="taskInput" placeholder="Введите новую задачу..." required>
+                <button type="submit" class="add-btn">Добавить</button>
+            `;
+            form.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const input = document.getElementById("taskInput");
+                if (input.value.trim() !== "") {
+                    tasks.push({ id: Date.now(), text: input.value.trim(), completed: false });
+                    renderApp();
+                }
+            });
+            content.appendChild(form);
+
+            // Фильтрация
+            let filtered = tasks;
+            if (currentFilter === "active") filtered = tasks.filter(t => !t.completed);
+            if (currentFilter === "completed") filtered = tasks.filter(t => t.completed);
+
+            const listContainer = document.createElement("div");
+            if (filtered.length === 0) {
+                const empty = document.createElement("p");
+                empty.textContent = "Список задач пуст.";
+                empty.style.color = "#777";
+                listContainer.appendChild(empty);
+            } else {
+                filtered.forEach(task => {
+                    const card = document.createElement("div");
+                    card.className = "task-card";
+
+                    const span = document.createElement("span");
+                    span.textContent = task.text;
+                    if (task.completed) span.style.textDecoration = "line-through";
+
+                    const toggleBtn = document.createElement("button");
+                    toggleBtn.className = "action-btn";
+                    toggleBtn.textContent = task.completed ? "Вернуть" : "Выполнить";
+                    toggleBtn.style.background = task.completed ? "#6c757d" : "#007bff";
+
+                    toggleBtn.addEventListener("click", () => {
+                        task.completed = !task.completed;
+                        renderApp();
+                    });
+
+                    card.append(span, toggleBtn);
+                    listContainer.appendChild(card);
+                });
+            }
+            content.appendChild(listContainer);
+        }
+
+        buttons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                buttons.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                currentFilter = btn.dataset.page;
+                renderApp();
+            });
+        });
+
+        renderApp();
+    </script>
+</body>
+</html>

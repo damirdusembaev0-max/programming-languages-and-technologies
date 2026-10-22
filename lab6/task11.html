@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 2 — Advanced FAQ Accordion</title>
+    <style>
+        :root {
+            --bg-accent: #f8fafc;
+            --border: #e2e8f0;
+            --text-title: #1e293b;
+            --text-body: #475569;
+            --primary: #3b82f6;
+            --radius: 12px;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f1f5f9;
+            padding: 3rem 1rem;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .faq-container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            padding: 2.5rem;
+            border-radius: var(--radius);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            margin: 0 0 2rem 0;
+            color: var(--text-title);
+            font-size: 1.75rem;
+            text-align: center;
+        }
+
+        .accordion-item {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .accordion-item:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .accordion-trigger {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: left;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-title);
+            cursor: pointer;
+        }
+
+        .accordion-icon {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: var(--text-body);
+            transition: transform 0.3s ease;
+            line-height: 1;
+        }
+
+        /* Контейнер для идеальной и плавной CSS-анимации высоты */
+        .accordion-panel {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s ease;
+        }
+
+        .accordion-content {
+            overflow: hidden;
+        }
+
+        .accordion-inner-text {
+            padding: 0 1.25rem 1.25rem 1.25rem;
+            color: var(--text-body);
+            line-height: 1.6;
+            font-size: 0.975rem;
+        }
+
+        /* Состояние "Open" через CSS модификаторы */
+        .accordion-item.is-open {
+            background-color: var(--bg-accent);
+            border-color: var(--border);
+        }
+
+        .accordion-item.is-open .accordion-panel {
+            grid-template-rows: 1fr;
+        }
+
+        .accordion-item.is-open .accordion-icon {
+            transform: rotate(45deg);
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+    <section class="faq-container">
+        <h2>Часто задаваемые вопросы</h2>
+        
+        <div class="accordion" id="faq">
+            <div class="accordion-item">
+                <button class="accordion-trigger" aria-expanded="false" aria-controls="panel-1">
+                    <span>Что такое реактивное управление DOM?</span>
+                    <span class="accordion-icon" aria-hidden="true">+</span>
+                </button>
+                <div class="accordion-panel" id="panel-1" role="region">
+                    <div class="accordion-content">
+                        <div class="accordion-inner-text">
+                            Это архитектурный подход, при котором изменения состояния приложения автоматически приводят к обновлению узлов DOM-дерева на странице без необходимости перезагрузки структуры вручную.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <button class="accordion-trigger" aria-expanded="false" aria-controls="panel-2">
+                    <span>Как оптимизировать обработчики событий?</span>
+                    <span class="accordion-icon" aria-hidden="true">+</span>
+                </button>
+                <div class="accordion-panel" id="panel-2" role="region">
+                    <div class="accordion-content">
+                        <div class="accordion-inner-text">
+                            Для оптимизации используют паттерн «Делегирование событий». Вместо навешивания EventListener на каждый элемент списка, вешается один общий слушатель на их родительский контейнер.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <button class="accordion-trigger" aria-expanded="false" aria-controls="panel-3">
+                    <span>Безопасно ли использовать innerHTML?</span>
+                    <span class="accordion-icon" aria-hidden="true">+</span>
+                </button>
+                <div class="accordion-panel" id="panel-3" role="region">
+                    <div class="accordion-content">
+                        <div class="accordion-inner-text">
+                            Использование innerHTML для вставки непроверенных пользовательских данных категорически запрещено в продакшене, так как это создает прямую XSS уязвимость. Рекомендуется использовать textContent.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        'use strict';
+        (() => {
+            const accordion = document.querySelector('#faq');
+            const items = accordion.querySelectorAll('.accordion-item');
+
+            accordion.addEventListener('click', (e) => {
+                const trigger = e.target.closest('.accordion-trigger');
+                if (!trigger) return;
+
+                const currentItem = trigger.closest('.accordion-item');
+                const isOpen = currentItem.classList.contains('is-open');
+
+                // Сброс и закрытие всех остальных открытых панелей
+                items.forEach(item => {
+                    item.classList.remove('is-open');
+                    item.querySelector('.accordion-trigger').setAttribute('aria-expanded', 'false');
+                });
+
+                // Точечное открытие целевого элемента
+                if (!isOpen) {
+                    currentItem.classList.add('is-open');
+                    trigger.setAttribute('aria-expanded', 'true');
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

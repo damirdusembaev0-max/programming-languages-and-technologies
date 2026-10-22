@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 1 — Семантический список покупок</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success-color: #16a34a;
+            --danger-color: #dc2626;
+            --danger-hover: #b91c1c;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 8px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-card {
+            background-color: var(--bg-card);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            width: 100%;
+            max-width: 420px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 0 0 1.5rem 0;
+            font-weight: 700;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        input:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: -1px;
+            border-color: transparent;
+        }
+
+        .btn {
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .btn-danger {
+            background-color: transparent;
+            color: var(--danger-color);
+            padding: 0.5rem;
+        }
+
+        .btn-danger:hover {
+            background-color: #fef2f2;
+            color: var(--danger-hover);
+        }
+
+        .shopping-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background-color: #abcde00a;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .list-item:hover {
+            border-color: var(--text-muted);
+        }
+
+        .list-item-text {
+            flex: 1;
+            margin-right: 1rem;
+            word-break: break-word;
+            transition: var(--transition);
+        }
+
+        /* Профессиональный UI-класс выполненного состояния */
+        .list-item.is-completed {
+            background-color: #f1f5f9;
+            border-color: var(--border-color);
+        }
+
+        .list-item.is-completed .list-item-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="app-card">
+        <header>
+            <h1>Список покупок</h1>
+        </header>
+
+        <section aria-label="Форма добавления">
+            <div class="input-group">
+                <input type="text" id="itemInput" placeholder="Например, молоко..." aria-label="Название товара" autocomplete="off">
+                <button class="btn btn-primary" id="addBtn">Добавить</button>
+            </div>
+        </section>
+
+        <section aria-label="Активные элементы списка">
+            <ul class="shopping-list" id="shoppingList"></ul>
+            <div id="srAlert" class="visually-hidden" aria-live="polite"></div>
+        </section>
+    </main>
+
+    <script>
+        'use strict';
+        (() => {
+            const itemInput = document.querySelector('#itemInput');
+            const addBtn = document.querySelector('#addBtn');
+            const shoppingList = document.querySelector('#shoppingList');
+            const srAlert = document.querySelector('#srAlert');
+
+            const createShoppingItem = () => {
+                const textValue = itemInput.value.trim();
+                if (!textValue) return;
+
+                // Создание элементов структуры
+                const li = document.createElement('li');
+                li.className = 'list-item';
+                li.setAttribute('role', 'checkbox');
+                li.setAttribute('aria-checked', 'false');
+                li.setAttribute('tabindex', '0');
+
+                const span = document.createElement('span');
+                span.className = 'list-item-text';
+                span.textContent = textValue; // Полная XSS безопасность
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn btn-danger';
+                deleteBtn.textContent = 'Удалить';
+                deleteBtn.setAttribute('aria-label', `Удалить ${textValue}`);
+
+                // Сборка элемента
+                li.appendChild(span);
+                li.appendChild(deleteBtn);
+
+                // Обработчики событий (Делегирование/Изоляция)
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    li.remove();
+                    srAlert.textContent = `Товар ${textValue} удален.`;
+                });
+
+                const toggleComplete = () => {
+                    const isCompleted = li.classList.toggle('is-completed');
+                    li.setAttribute('aria-checked', isCompleted ? 'true' : 'false');
+                };
+
+                li.addEventListener('click', toggleComplete);
+                li.addEventListener('keydown', (e) => {
+                    if (e.key === ' ' || e.key === 'Enter') {
+                        e.preventDefault();
+                        toggleComplete();
+                    }
+                });
+
+                shoppingList.appendChild(li);
+                itemInput.value = '';
+                itemInput.focus();
+                srAlert.textContent = `Товар ${textValue} добавлен в список.`;
+            };
+
+            addBtn.addEventListener('click', createShoppingItem);
+            itemInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') createShoppingItem();
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Задание 18 — Бронирование комнат</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .card { background: #1e293b; width: 100%; max-width: 500px; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); border: 1px solid #334155; }
+    h2 { margin-top: 0; font-size: 1.4rem; color: #38bdf8; text-align: center; }
+    label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; color: #cbd5e1; }
+    select, input { width: 100%; padding: 10px; margin-bottom: 12px; background: #0f172a; border: 1px solid #475569; border-radius: 8px; color: #fff; font-size: 1rem; outline: none; }
+    button.btn-main { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+    button.btn-main:hover { background: #059669; }
+    .error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 10px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; margin-bottom: 12px; text-align: center; }
+    ul { list-style: none; padding: 0; margin-top: 15px; max-height: 200px; overflow-y: auto; }
+    li { background: #0f172a; border: 1px solid #334155; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; font-size: 0.9rem; }
+    .del-btn { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+    .del-btn:hover { background: #dc2626; }
+    .empty { text-align: center; color: #94a3b8; font-style: italic; margin-top: 10px; }
+    h4 { margin: 20px 0 10px 0; font-size: 1rem; color: #38bdf8; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function App() {
+      const STORAGE_KEY = 'lab8_room_bookings';
+      const [bookings, setBookings] = useState(() => {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          const parsed = raw ? JSON.parse(raw) : [];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch { return []; }
+      });
+
+      const [room, setRoom] = useState('Комната 101');
+      const [date, setDate] = useState('');
+      const [time, setTime] = useState('09:00 - 10:30');
+      const [error, setError] = useState('');
+
+      useEffect(() => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+      }, [bookings]);
+
+      const handleBooking = (e) => {
+        e.preventDefault();
+        setError('');
+        if (!date) return setError('Пожалуйста, выберите дату бронирования!');
+
+        // Проверка на конфликты по условию задания 18
+        const hasConflict = bookings.some(b => b.room === room && b.date === date && b.time === time);
+        if (hasConflict) {
+          return setError(`⚠️ Конфликт! "${room}" на ${date} (${time}) уже занята[cite: 3]!`);
+        }
+
+        setBookings([...bookings, { room, date, time }]);
+        setDate('');
+      };
+
+      return (
+        <div className="card">
+          <h2>🏛 Бронирование комнат</h2>
+          <form onSubmit={handleBooking}>
+            <label>Помещение:</label>
+            <select value={room} onChange={e => setRoom(e.target.value)}>
+              <option value="Комната 101">Комната 101</option>
+              <option value="Комната 102">Комната 102</option>
+              <option value="Конференц-зал">Конференц-зал</option>
+            </select>
+
+            <label>Дата:</label>
+            <input type="date" value={date} onChange={e => setDate(e.target.value)} />
+
+            <label>Интервал времени:</label>
+            <select value={time} onChange={e => setTime(e.target.value)}>
+              <option value="09:00 - 10:30">09:00 - 10:30</option>
+              <option value="10:45 - 12:15">10:45 - 12:15</option>
+              <option value="13:00 - 14:30">13:00 - 14:30</option>
+              <option value="14:45 - 16:15">14:45 - 16:15</option>
+            </select>
+
+            <button className="btn-main" type="submit">Забронировать</button>
+          </form>
+
+          {error && <div className="error">{error}</div>}
+
+          <h4>Активные брони</h4>
+          {bookings.length === 0 ? (
+            <div className="empty">Активных бронирований нет.</div>
+          ) : (
+            <ul>
+              {bookings.map((item, index) => (
+                <li key={index}>
+                  <span>📍 {item.room} <br/>📅 {item.date} | ⏰ {item.time}</span>
+                  <button className="del-btn" onClick={() => setBookings(bookings.filter((_, i) => i !== index))}>Отмена</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
