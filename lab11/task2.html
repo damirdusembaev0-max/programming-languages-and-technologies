@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лаб 11 (Базовый) — Карточка студента (React props & state)</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        h2 { color: #38bdf8; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+        button { background: #38bdf8; color: #0f172a; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+        button:hover { background: #0284c7; color: #fff; }
+        .details { margin-top: 12px; padding: 12px; background: #0b1120; border-left: 4px solid #38bdf8; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function StudentCard({ name, group, specialty, gpa }) {
+            const [showDetails, setShowDetails] = useState(false);
+
+            return (
+                <div className="card">
+                    <h3>{name}</h3>
+                    <p><strong>Группа:</strong> {group}</p>
+                    <button onClick={() => setShowDetails(prev => !prev)}>
+                        {showDetails ? "Скрыть подробности" : "Показать подробности"}
+                    </button>
+
+                    {showDetails && (
+                        <div className="details">
+                            <p><strong>Специальность:</strong> {specialty}</p>
+                            <p><strong>Средний балл (GPA):</strong> {gpa}</p>
+                            <p><strong>Форма обучения:</strong> Очная (АТУ)</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function App() {
+            return (
+                <div className="container">
+                    <h2>Вариант №2 (Базовый): Карточка студента</h2>
+                    <StudentCard 
+                        name="Дюсембаев Дамир" 
+                        group="ИС 25-22" 
+                        specialty="Информационные системы" 
+                        gpa="3.65" 
+                    />
+                    <StudentCard 
+                        name="Нуракбаев Амир" 
+                        group="ИС 25-22" 
+                        specialty="Информационные системы" 
+                        gpa="3.40" 
+                    />
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

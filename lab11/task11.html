@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лаб 11 (Средний) — Корзина товаров (React props & state)</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; }
+        .container { max-width: 850px; margin: 0 auto; }
+        h2 { color: #38bdf8; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .box { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 20px; }
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #0b1120; border-radius: 6px; margin-bottom: 10px; }
+        button { border: none; padding: 6px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .btn-add { background: #38bdf8; color: #0f172a; }
+        .btn-del { background: #ef4444; color: #fff; }
+        .summary { margin-top: 16px; padding: 12px; background: rgba(56, 189, 248, 0.15); border-left: 4px solid #38bdf8; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function ProductCard({ product, onAdd }) {
+            return (
+                <div className="item">
+                    <span>{product.name} — <strong>{product.price.toLocaleString()} ₸</strong></span>
+                    <button className="btn-add" onClick={() => onAdd(product)}>Добавить</button>
+                </div>
+            );
+        }
+
+        function App() {
+            const [cart, setCart] = useState([]);
+
+            const products = [
+                { id: 1, name: "Ноутбук ASUS V16", price: 450000 },
+                { id: 2, name: "Наушники JBL", price: 35000 },
+                { id: 3, name: "Смартфон Realme", price: 180000 },
+                { id: 4, name: "Термопринтер XP-365B", price: 22000 }
+            ];
+
+            const handleAdd = (product) => {
+                setCart(prev => {
+                    const exists = prev.find(item => item.id === product.id);
+                    if (exists) {
+                        return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
+                    }
+                    return [...prev, { ...product, qty: 1 }];
+                });
+            };
+
+            const handleRemove = (id) => {
+                setCart(prev => prev.filter(item => item.id !== id));
+            };
+
+            const totalCount = cart.reduce((sum, i) => sum + i.qty, 0);
+            const totalPrice = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+
+            return (
+                <div className="container">
+                    <h2>Вариант №11 (Средний): Корзина покупок (React)</h2>
+                    <div className="grid">
+                        <div className="box">
+                            <h3>Каталог товаров</h3>
+                            {products.map(p => (
+                                <ProductCard key={p.id} product={p} onAdd={handleAdd} />
+                            ))}
+                        </div>
+                        <div className="box">
+                            <h3>Ваша корзина</h3>
+                            {cart.length === 0 ? (
+                                <p style={{ color: "#94a3b8" }}>Корзина пуста</p>
+                            ) : (
+                                cart.map(item => (
+                                    <div key={item.id} className="item">
+                                        <span>{item.name} (x{item.qty}) — {(item.price * item.qty).toLocaleString()} ₸</span>
+                                        <button className="btn-del" onClick={() => handleRemove(item.id)}>Удалить</button>
+                                    </div>
+                                ))
+                            )}
+                            <div className="summary">
+                                <p>Количество товаров: <strong>{totalCount}</strong></p>
+                                <p>Общая сумма: <strong>{totalPrice.toLocaleString()} ₸</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

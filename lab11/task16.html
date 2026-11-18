@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лаб 11 (Повышенный) — Планировщик расходов (React props & state)</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; }
+        .container { max-width: 750px; margin: 0 auto; }
+        h2 { color: #38bdf8; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+        .row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+        input, select { padding: 10px; border-radius: 6px; border: 1px solid #475569; background: #0b1120; color: #fff; flex: 1; }
+        button { padding: 10px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-primary { background: #38bdf8; color: #0f172a; }
+        .btn-del { background: #ef4444; color: #fff; padding: 6px 10px; }
+        .error { color: #ef4444; font-size: 0.9rem; margin-bottom: 8px; }
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #0b1120; border-radius: 6px; margin-bottom: 8px; }
+        .total { font-size: 1.1rem; color: #38bdf8; font-weight: bold; margin-top: 12px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function ExpenseForm({ onAddExpense }) {
+            const [title, setTitle] = useState("");
+            const [amount, setAmount] = useState("");
+            const [category, setCategory] = useState("Еда");
+            const [error, setError] = useState("");
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (!title.trim() || !amount || Number(amount) <= 0) {
+                    setError("Введите название и корректную сумму больше 0.");
+                    return;
+                }
+                setError("");
+                onAddExpense({
+                    id: Date.now(),
+                    title: title.trim(),
+                    amount: Number(amount),
+                    category
+                });
+                setTitle("");
+                setAmount("");
+            };
+
+            return (
+                <form className="card" onSubmit={handleSubmit}>
+                    <h3>Добавить расход</h3>
+                    {error && <div className="error">{error}</div>}
+                    <div className="row">
+                        <input type="text" placeholder="Название (например, Обед)" value={title} onChange={e => setTitle(e.target.value)} />
+                        <input type="number" placeholder="Сумма (₸)" value={amount} onChange={e => setAmount(e.target.value)} />
+                        <select value={category} onChange={e => setCategory(e.target.value)}>
+                            <option value="Еда">Еда</option>
+                            <option value="Транспорт">Транспорт</option>
+                            <option value="Учеба">Учеба</option>
+                            <option value="Развлечения">Развлечения</option>
+                        </select>
+                        <button type="submit" className="btn-primary">Добавить</button>
+                    </div>
+                </form>
+            );
+        }
+
+        function ExpenseList({ items, onDelete }) {
+            if (items.length === 0) {
+                return <p style={{ color: "#94a3b8" }}>Нет расходов в выбранной категории.</p>;
+            }
+            return (
+                <div>
+                    {items.map(exp => (
+                        <div key={exp.id} className="item">
+                            <span><strong>{exp.title}</strong> [{exp.category}] — {exp.amount.toLocaleString()} ₸</span>
+                            <button className="btn-del" onClick={() => onDelete(exp.id)}>Удалить</button>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        function App() {
+            const [expenses, setExpenses] = useState([
+                { id: 1, title: "Обед в столовой АТУ", amount: 1500, category: "Еда" },
+                { id: 2, title: "Проезд Onay", amount: 240, category: "Транспорт" }
+            ]);
+            const [filterCategory, setFilterCategory] = useState("Все");
+
+            const handleAddExpense = (newExp) => setExpenses([newExp, ...expenses]);
+            const handleDeleteExpense = (id) => setExpenses(expenses.filter(e => e.id !== id));
+
+            const visibleExpenses = filterCategory === "Все"
+                ? expenses
+                : expenses.filter(e => e.category === filterCategory);
+
+            const totalSum = visibleExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+            return (
+                <div className="container">
+                    <h2>Вариант №16 (Повышенный): Планировщик расходов (React)</h2>
+                    <ExpenseForm onAddExpense={handleAddExpense} />
+
+                    <div className="card">
+                        <div className="row" style={{ alignItems: "center" }}>
+                            <label><strong>Фильтр по категории:</strong></label>
+                            <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
+                                <option value="Все">Все категории</option>
+                                <option value="Еда">Еда</option>
+                                <option value="Транспорт">Транспорт</option>
+                                <option value="Учеба">Учеба</option>
+                                <option value="Развлечения">Развлечения</option>
+                            </select>
+                        </div>
+
+                        <ExpenseList items={visibleExpenses} onDelete={handleDeleteExpense} />
+                        <div className="total">Общая сумма ({filterCategory}): {totalSum.toLocaleString()} ₸</div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
