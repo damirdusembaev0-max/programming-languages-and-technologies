@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лаб 12 (Базовый) — Авторизация в системе заметок</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; }
+        .container { max-width: 700px; margin: 0 auto; }
+        h2 { color: #38bdf8; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 24px; margin-bottom: 20px; }
+        .row { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+        input { padding: 12px; border-radius: 6px; border: 1px solid #475569; background: #0b1120; color: #fff; font-size: 1rem; }
+        button { padding: 10px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-primary { background: #38bdf8; color: #0f172a; }
+        .btn-primary:hover { background: #0284c7; color: #fff; }
+        .btn-danger { background: #ef4444; color: #fff; }
+        .error { color: #ef4444; font-size: 0.9rem; background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 6px; border-left: 4px solid #ef4444; margin-bottom: 12px; }
+        .success { color: #22c55e; font-size: 0.9rem; background: rgba(34, 197, 94, 0.1); padding: 10px; border-radius: 6px; border-left: 4px solid #22c55e; margin-bottom: 12px; }
+        .badge { display: inline-block; padding: 4px 8px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-radius: 4px; font-size: 0.85rem; font-weight: bold; }
+        .note-item { background: #0b1120; padding: 12px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #334155; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function App() {
+            const [isAuthenticated, setIsAuthenticated] = useState(false);
+            const [user, setUser] = useState(null);
+            const [token, setToken] = useState("");
+
+            const [login, setLogin] = useState("");
+            const [password, setPassword] = useState("");
+            const [error, setError] = useState("");
+            const [successMsg, setSuccessMsg] = useState("");
+
+            const [notes, setNotes] = useState([
+                { id: 1, text: "Подготовиться к защите лабораторной работы №12" },
+                { id: 2, text: "Изучить принципы работы HttpOnly Cookie и JWT подписи" }
+            ]);
+            const [newNote, setNewNote] = useState("");
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                setError("");
+                setSuccessMsg("");
+
+                if (!login.trim() || !password.trim()) {
+                    setError("Ошибка 400: Заполните все обязательные поля формы.");
+                    return;
+                }
+
+                if (login === "damir" && password === "secret123") {
+                    setIsAuthenticated(true);
+                    setUser({ name: "Дюсембаев Дамир", role: "student", group: "ИС 25-22" });
+                    setToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkYW1pciIsInJvbGUiOiJzdHVkZW50In0.mock_signature_secure_xyz");
+                    setSuccessMsg("Успешный вход! Сессия создана.");
+                    setPassword("");
+                } else {
+                    setError("Ошибка 401 (Unauthorized): Неверный логин или пароль.");
+                }
+            };
+
+            const handleLogout = () => {
+                setIsAuthenticated(false);
+                setUser(null);
+                setToken("");
+                setLogin("");
+                setPassword("");
+                setSuccessMsg("Сессия завершена. Токен уничтожен.");
+            };
+
+            const handleAddNote = (e) => {
+                e.preventDefault();
+                if (!newNote.trim()) return;
+                setNotes([...notes, { id: Date.now(), text: newNote.trim() }]);
+                setNewNote("");
+            };
+
+            return (
+                <div className="container">
+                    <h2>Лабораторная работа №12: Базовый уровень</h2>
+                    <p style={{ color: "#94a3b8", marginBottom: "20px" }}>Тестовые данные: логин <code>damir</code>, пароль <code>secret123</code>[cite: 24, 25]</p>
+
+                    {!isAuthenticated ? (
+                        <div className="card">
+                            <h3>Авторизация в системе заметок (Вариант №3)[cite: 25]</h3>
+                            <form onSubmit={handleLogin} style={{ marginTop: "16px" }}>
+                                {error && <div className="error">{error}</div>}
+                                {successMsg && <div className="success">{successMsg}</div>}
+                                <div className="row">
+                                    <label>Логин:</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Введите логин (damir)" 
+                                        value={login} 
+                                        onChange={e => setLogin(e.target.value)} 
+                                    />
+                                </div>
+                                <div className="row">
+                                    <label>Пароль:</label>
+                                    <input 
+                                        type="password" 
+                                        placeholder="Введите пароль (secret123)" 
+                                        value={password} 
+                                        onChange={e => setPassword(e.target.value)} 
+                                    />
+                                </div>
+                                <button type="submit" className="btn-primary">Войти в систему</button>
+                            </form>
+                        </div>
+                    ) : (
+                        <div>
+                            <div className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <div>
+                                    <h3>Личный кабинет</h3>
+                                    <p>Пользователь: <strong>{user.name}</strong> ({user.group})</p>
+                                    <p>Роль: <span className="badge">{user.role}</span></p>
+                                </div>
+                                <button className="btn-danger" onClick={handleLogout}>Выйти</button>
+                            </div>
+
+                            <div className="card">
+                                <h3>Защищенный ресурс: Приватные заметки</h3>
+                                <form onSubmit={handleAddNote} style={{ display: "flex", gap: "10px", marginBottom: "16px", marginTop: "10px" }}>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Новая приватная заметка..." 
+                                        value={newNote} 
+                                        onChange={e => setNewNote(e.target.value)} 
+                                        style={{ flex: 1 }}
+                                    />
+                                    <button type="submit" className="btn-primary">Добавить</button>
+                                </form>
+
+                                <div>
+                                    {notes.map(note => (
+                                        <div key={note.id} className="note-item">
+                                            🔒 {note.text}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

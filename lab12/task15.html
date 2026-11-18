@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лаб 12 (Средний) — JWT Демо</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; }
+        .container { max-width: 750px; margin: 0 auto; }
+        h2 { color: #38bdf8; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 24px; margin-bottom: 20px; }
+        .row { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+        input { padding: 12px; border-radius: 6px; border: 1px solid #475569; background: #0b1120; color: #fff; font-size: 1rem; }
+        button { padding: 10px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-primary { background: #38bdf8; color: #0f172a; }
+        .btn-danger { background: #ef4444; color: #fff; }
+        .error { color: #ef4444; font-size: 0.9rem; background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 6px; border-left: 4px solid #ef4444; margin-bottom: 12px; }
+        .success { color: #22c55e; font-size: 0.9rem; background: rgba(34, 197, 94, 0.1); padding: 10px; border-radius: 6px; border-left: 4px solid #22c55e; margin-bottom: 12px; }
+        pre { background: #0b1120; padding: 14px; border-radius: 6px; border: 1px solid #334155; overflow-x: auto; color: #38bdf8; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function App() {
+            const [isLoggedIn, setIsLoggedIn] = useState(false);
+            const [tokenData, setTokenData] = useState(null);
+            const [protectedData, setProtectedData] = useState(null);
+
+            const [login, setLogin] = useState("");
+            const [password, setPassword] = useState("");
+            const [error, setError] = useState("");
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                setError("");
+
+                if (login === "damir" && password === "secret123") {
+                    // Имитация выдачи JWT сервером (header.payload.signature)
+                    const mockJWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkYW1pciIsImlhdCI6MTcxMTUwMDAwMCwiZXhwIjoxNzExNTAwMzAwfQ.signature_verified_ok";
+                    
+                    setTokenData({
+                        raw: mockJWT,
+                        header: JSON.stringify({ alg: "HS256", typ: "JWT" }, null, 2),
+                        payload: JSON.stringify({ sub: "damir", role: "student", group: "ИС 25-22", exp: "Короткий срок" }, null, 2)
+                    });
+                    setIsLoggedIn(true);
+                    setPassword("");
+                } else {
+                    setError("Ошибка 401: Неверный логин или пароль для получения JWT.");
+                }
+            };
+
+            const handleFetchProtectedEndpoint = () => {
+                // Имитация запроса к защищенному endpoint с проверкой подписи и срока JWT
+                if (tokenData) {
+                    setProtectedData({
+                        status: 200,
+                        message: "Доступ разрешен! Сервер успешно проверил подпись и срок действия JWT.",
+                        serverData: ["Секретный курс по React", "Ведомость оценок группы ИС 25-22"]
+                    });
+                }
+            };
+
+            const handleLogout = () => {
+                setIsLoggedIn(false);
+                setTokenData(null);
+                setProtectedData(null);
+                setLogin("");
+                setPassword("");
+            };
+
+            return (
+                <div className="container">
+                    <h2>Лабораторная работа №12: Средний уровень (JWT-демо)</h2>
+                    <p style={{ color: "#94a3b8", marginBottom: "20px" }}>Тестовые данные: логин <code>damir</code>, пароль <code>secret123</code>[cite: 24, 25]</p>
+
+                    {!isLoggedIn ? (
+                        <div className="card">
+                            <h3>Получение JWT токена (Вариант №15)</h3>
+                            <form onSubmit={handleLogin} style={{ marginTop: "16px" }}>
+                                {error && <div className="error">{error}</div>}
+                                <div className="row">
+                                    <label>Логин:</label>
+                                    <input type="text" placeholder="damir" value={login} onChange={e => setLogin(e.target.value)} />
+                                </div>
+                                <div className="row">
+                                    <label>Пароль:</label>
+                                    <input type="password" placeholder="secret123" value={password} onChange={e => setPassword(e.target.value)} />
+                                </div>
+                                <button type="submit" className="btn-primary">Запросить JWT токен</button>
+                            </form>
+                        </div>
+                    ) : (
+                        <div>
+                            <div className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <div>
+                                    <h3>Сессия активна (JWT выдан)</h3>
+                                    <p>Пользователь: <strong>damir</strong> (ИС 25-22)</p>
+                                </div>
+                                <button className="btn-danger" onClick={handleLogout}>Выйти</button>
+                            </div>
+
+                            <div className="card">
+                                <h3>Структура выданного JWT</h3>
+                                <p style={{ fontSize: "0.9rem", color: "#94a3b8" }}>Header:</p>
+                                <pre>{tokenData.header}</pre>
+                                <p style={{ fontSize: "0.9rem", color: "#94a3b8", marginTop: "10px" }}>Payload (Claims):</p>
+                                <pre>{tokenData.payload}</pre>
+
+                                <button onClick={handleFetchProtectedEndpoint} className="btn-primary" style={{ marginTop: "14px" }}>
+                                    Запросить защищенный ресурс (`GET /api/secret`)
+                                </button>
+                            </div>
+
+                            {protectedData && (
+                                <div className="card">
+                                    <div className="success">{protectedData.message}</div>
+                                    <h4 style={{ color: "#38bdf8", marginTop: "10px" }}>Полученные данные от сервера:</h4>
+                                    <ul>
+                                        {protectedData.serverData.map((item, idx) => (
+                                            <li key={idx} style={{ margin: "6px 0" }}>{item}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

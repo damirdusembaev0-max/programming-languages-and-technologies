@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лаб 12 (Повышенный) — JWT ротация Refresh Token</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; }
+        .container { max-width: 750px; margin: 0 auto; }
+        h2 { color: #38bdf8; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 24px; margin-bottom: 20px; }
+        .row { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+        input { padding: 12px; border-radius: 6px; border: 1px solid #475569; background: #0b1120; color: #fff; font-size: 1rem; }
+        button { padding: 10px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-primary { background: #38bdf8; color: #0f172a; }
+        .btn-warning { background: #f59e0b; color: #0f172a; }
+        .btn-danger { background: #ef4444; color: #fff; }
+        .error { color: #ef4444; font-size: 0.9rem; background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 6px; border-left: 4px solid #ef4444; margin-bottom: 12px; }
+        .success { color: #22c55e; font-size: 0.9rem; background: rgba(34, 197, 94, 0.1); padding: 10px; border-radius: 6px; border-left: 4px solid #22c55e; margin-bottom: 12px; }
+        .token-box { background: #0b1120; padding: 10px; border-radius: 6px; border: 1px solid #334155; font-family: monospace; font-size: 0.8rem; color: #38bdf8; word-break: break-all; margin-top: 6px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function App() {
+            const [isAuth, setIsAuth] = useState(false);
+            const [accessToken, setAccessToken] = useState("");
+            const [refreshToken, setRefreshToken] = useState("");
+            const [logMsg, setLogMsg] = useState("");
+
+            const [login, setLogin] = useState("");
+            const [password, setPassword] = useState("");
+            const [error, setError] = useState("");
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                setError("");
+
+                if (login === "damir" && password === "secret123") {
+                    setIsAuth(true);
+                    setAccessToken("access_token_v1_expires_in_15min");
+                    setRefreshToken("refresh_token_secure_rotation_xyz");
+                    setLogMsg("Успешный вход. Выпущены Access Token и безопасный Refresh Token (HttpOnly Cookie).");
+                    setPassword("");
+                } else {
+                    setError("Ошибка 401: Неверные учетные данные.");
+                }
+            };
+
+            const handleRefresh = () => {
+                // Ротация refresh token
+                setAccessToken("access_token_v2_refreshed_new");
+                setRefreshToken("refresh_token_rotated_abc");
+                setLogMsg("Сессия успешно продлена! Выполнен Refresh Token Rotation на сервере.");
+            };
+
+            const handleLogout = () => {
+                setIsAuth(false);
+                setAccessToken("");
+                setRefreshToken("");
+                setLogMsg("Сессия полностью завершена, токены аннулированы.");
+                setLogin("");
+                setPassword("");
+            };
+
+            return (
+                <div className="container">
+                    <h2>Лабораторная работа №12: Повышенный уровень (Refresh Token)</h2>
+                    <p style={{ color: "#94a3b8", marginBottom: "20px" }}>Тестовые данные: логин <code>damir</code>, пароль <code>secret123</code>[cite: 24, 25]</p>
+
+                    {!isAuth ? (
+                        <div className="card">
+                            <h3>Вход в систему с ротацией токенов (Вариант №17)[cite: 26]</h3>
+                            <form onSubmit={handleLogin} style={{ marginTop: "16px" }}>
+                                {error && <div className="error">{error}</div>}
+                                <div className="row">
+                                    <label>Логин:</label>
+                                    <input type="text" placeholder="damir" value={login} onChange={e => setLogin(e.target.value)} />
+                                </div>
+                                <div className="row">
+                                    <label>Пароль:</label>
+                                    <input type="password" placeholder="secret123" value={password} onChange={e => setPassword(e.target.value)} />
+                                </div>
+                                <button type="submit" className="btn-primary">Войти</button>
+                            </form>
+                        </div>
+                    ) : (
+                        <div>
+                            <div className="card">
+                                <h3>Управление токенами сессии</h3>
+                                {logMsg && <div className="success" style={{ marginTop: "10px" }}>{logMsg}</div>}
+
+                                <div style={{ marginTop: "16px" }}>
+                                    <p><strong>Access Token (короткоживущий):</strong></p>
+                                    <div className="token-box">{accessToken}</div>
+                                </div>
+
+                                <div style={{ marginTop: "12px" }}>
+                                    <p><strong>Refresh Token (в HttpOnly Cookie):</strong></p>
+                                    <div className="token-box">{refreshToken}</div>
+                                </div>
+
+                                <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+                                    <button onClick={handleRefresh} className="btn-warning">Обновить сессию (Refresh)</button>
+                                    <button onClick={handleLogout} className="btn-danger">Выйти со всех устройств</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
