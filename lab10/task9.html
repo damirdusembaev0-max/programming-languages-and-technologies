@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лаб 10 (Средний) — Корзина покупок</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; }
+        .container { max-width: 800px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .box { background: #1e293b; padding: 20px; border-radius: 10px; border: 1px solid #334155; }
+        h2 { color: #38bdf8; margin-top: 0; font-size: 1.2rem; }
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #0f172a; border-radius: 6px; margin-bottom: 8px; }
+        button { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .add { background: #38bdf8; color: #0f172a; }
+        .del { background: #ef4444; color: #fff; }
+        .total { margin-top: 15px; padding: 12px; background: rgba(56, 189, 248, 0.15); border-left: 4px solid #38bdf8; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="box">
+            <h2>Каталог товаров (Вариант №9)</h2>
+            <div id="catalog"></div>
+        </div>
+        <div class="box">
+            <h2>Корзина покупок</h2>
+            <div id="cart"></div>
+            <div id="total" class="total">Итого: 0 ₸</div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Модуль products.js
+        const catalog = [
+            { id: 1, name: "Смартфон", price: 150000 },
+            { id: 2, name: "Наушники", price: 25000 },
+            { id: 3, name: "Рюкзак", price: 12000 },
+            { id: 4, name: "Мышь беспроводная", price: 8500 }
+        ];
+
+        // Модуль cart.js
+        let cartItems = [];
+        function addToCart(product) {
+            const found = cartItems.find(i => i.id === product.id);
+            if (found) found.qty += 1;
+            else cartItems.push({ ...product, qty: 1 });
+        }
+        function removeFromCart(id) {
+            cartItems = cartItems.filter(i => i.id !== id);
+        }
+        function getTotal() {
+            return cartItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+        }
+
+        // Модуль ui.js + main.js
+        function updateUI() {
+            const catEl = document.getElementById("catalog");
+            catEl.innerHTML = "";
+            catalog.forEach(p => {
+                const div = document.createElement("div");
+                div.className = "item";
+                div.innerHTML = `<span>${p.name} — ${p.price.toLocaleString()} ₸</span><button class="add">В корзину</button>`;
+                div.querySelector("button").addEventListener("click", () => { addToCart(p); updateUI(); });
+                catEl.appendChild(div);
+            });
+
+            const cartEl = document.getElementById("cart");
+            cartEl.innerHTML = "";
+            if (cartItems.length === 0) {
+                cartEl.innerHTML = "<p style='color:#94a3b8'>Корзина пуста</p>";
+            } else {
+                cartItems.forEach(item => {
+                    const div = document.createElement("div");
+                    div.className = "item";
+                    div.innerHTML = `<span>${item.name} (x${item.qty}) — ${(item.price * item.qty).toLocaleString()} ₸</span><button class="del">Удалить</button>`;
+                    div.querySelector("button").addEventListener("click", () => { removeFromCart(item.id); updateUI(); });
+                    cartEl.appendChild(div);
+                });
+            }
+            document.getElementById("total").textContent = `Итого: ${getTotal().toLocaleString()} ₸`;
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>

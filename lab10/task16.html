@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лаб 10 (Повышенный) — Мини-CRM клиентов</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; }
+        .container { max-width: 900px; margin: 0 auto; background: #1e293b; padding: 24px; border-radius: 10px; border: 1px solid #334155; }
+        h2 { color: #38bdf8; margin-top: 0; }
+        .row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+        input, select { padding: 10px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #fff; flex: 1; }
+        button { padding: 10px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-add { background: #38bdf8; color: #0f172a; }
+        .btn-del { background: #ef4444; color: #fff; padding: 6px 10px; }
+        .errors { color: #ef4444; margin-bottom: 12px; font-size: 0.9rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 10px; border: 1px solid #334155; text-align: left; }
+        th { background: #0f172a; color: #38bdf8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Мини-CRM клиентов (Вариант №16)</h2>
+        <form id="crmForm">
+            <div class="row">
+                <input type="text" id="name" placeholder="ФИО клиента">
+                <input type="text" id="email" placeholder="Email (user@mail.kz)">
+                <input type="text" id="phone" placeholder="Телефон (+77011234567)">
+                <button type="submit" class="btn-add">Добавить</button>
+            </div>
+        </form>
+        <div id="errors" class="errors"></div>
+        <div class="row">
+            <input type="text" id="search" placeholder="Поиск по имени, email или телефону...">
+        </div>
+        <table>
+            <thead>
+                <tr><th>Имя</th><th>Email</th><th>Телефон</th><th>Статус</th><th>Действие</th></tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        // Модуль storage.js
+        const Storage = {
+            load: () => JSON.parse(localStorage.getItem("crm_v16") || "[]"),
+            save: (data) => localStorage.setItem("crm_v16", JSON.stringify(data))
+        };
+
+        // Модуль validation.js
+        function validate(name, email, phone) {
+            const errs = [];
+            if (name.trim().length < 2) errs.push("Имя должно быть не короче 2 символов.");
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.push("Некорректный формат email.");
+            if (!/^\+?[0-9]{10,12}$/.test(phone.replace(/[\s()-]/g, ""))) errs.push("Телефон должен содержать 10-12 цифр.");
+            return errs;
+        }
+
+        // Модуль crm.js
+        let clients = Storage.load();
+        function addClient(client) {
+            clients.push({ id: Date.now(), ...client, status: "Новый" });
+            Storage.save(clients);
+        }
+        function deleteClient(id) {
+            clients = clients.filter(c => c.id !== id);
+            Storage.save(clients);
+        }
+        function changeStatus(id, status) {
+            const c = clients.find(x => x.id === id);
+            if (c) { c.status = status; Storage.save(clients); }
+        }
+
+        // Модуль search.js + ui.js
+        let query = "";
+        function render() {
+            const tbody = document.getElementById("tbody");
+            tbody.innerHTML = "";
+            const q = query.toLowerCase().trim();
+            const filtered = clients.filter(c => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.phone.includes(q));
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;color:#94a3b8'>Нет записей</td></tr>";
+                return;
+            }
+
+            filtered.forEach(c => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${c.name}</td>
+                    <td>${c.email}</td>
+                    <td>${c.phone}</td>
+                    <td>
+                        <select class="st">
+                            <option value="Новый" ${c.status === "Новый" ? "selected" : ""}>Новый</option>
+                            <option value="В работе" ${c.status === "В работе" ? "selected" : ""}>В работе</option>
+                            <option value="Завершен" ${c.status === "Завершен" ? "selected" : ""}>Завершен</option>
+                        </select>
+                    </td>
+                    <td><button class="btn-del">Удалить</button></td>
+                `;
+                tr.querySelector(".st").addEventListener("change", (e) => changeStatus(c.id, e.target.value));
+                tr.querySelector(".btn-del").addEventListener("click", () => { deleteClient(c.id); render(); });
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById("crmForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+            const phone = document.getElementById("phone").value;
+            const errBox = document.getElementById("errors");
+
+            const errs = validate(name, email, phone);
+            if (errs.length > 0) {
+                errBox.innerHTML = errs.map(x => `<div>• ${x}</div>`).join("");
+                return;
+            }
+            errBox.innerHTML = "";
+            addClient({ name: name.trim(), email: email.trim(), phone: phone.trim() });
+            e.target.reset();
+            render();
+        });
+
+        document.getElementById("search").addEventListener("input", (e) => {
+            query = e.target.value;
+            render();
+        });
+
+        render();
+    </script>
+</body>
+</html>

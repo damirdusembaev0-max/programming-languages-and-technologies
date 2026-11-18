@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лаб 10 (Базовый) — Генератор приветствий</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; }
+        .card { max-width: 500px; margin: 0 auto; background: #1e293b; padding: 24px; border-radius: 10px; border: 1px solid #334155; }
+        h2 { color: #38bdf8; margin-top: 0; }
+        input { width: 100%; padding: 10px; margin: 10px 0 15px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #fff; box-sizing: border-box; }
+        .btns { display: flex; gap: 8px; }
+        button { flex: 1; padding: 10px; border: none; border-radius: 6px; background: #38bdf8; color: #0f172a; font-weight: bold; cursor: pointer; }
+        button:hover { background: #0284c7; color: #fff; }
+        .error { color: #ef4444; margin-top: 10px; font-size: 0.9rem; }
+        .result { margin-top: 15px; padding: 12px; background: rgba(56, 189, 248, 0.1); border-left: 4px solid #38bdf8; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Генератор приветствий (Вариант №3)</h2>
+        <label>Имя пользователя:</label>
+        <input type="text" id="nameInput" placeholder="Например, Дамир">
+        <div class="btns">
+            <button id="btnFormal">Официальное</button>
+            <button id="btnInformal">Неформальное</button>
+            <button id="btnBusiness">Деловое</button>
+        </div>
+        <div id="error" class="error"></div>
+        <div id="output" class="result">Выберите шаблон приветствия</div>
+    </div>
+
+    <script type="module">
+        // Имитация модуля greetings.js
+        const Greetings = {
+            formal: (name) => !name ? "Здравствуйте, уважаемый гость." : `Здравствуйте, ${name}. Рады приветствовать Вас!`,
+            informal: (name) => !name ? "Привет! Как дела?" : `Привет, ${name}! Какая встреча!`,
+            business: (name) => !name ? "Добрый день, коллега." : `Добрый день, ${name}. Готовы обсудить проект?`
+        };
+
+        const input = document.getElementById("nameInput");
+        const error = document.getElementById("error");
+        const output = document.getElementById("output");
+
+        function render(fn) {
+            const name = input.value.trim();
+            if (name.length > 30) {
+                error.textContent = "Ошибка: Имя слишком длинное (макс. 30 символов).";
+                output.textContent = "";
+                return;
+            }
+            error.textContent = "";
+            output.textContent = fn(name);
+        }
+
+        document.getElementById("btnFormal").addEventListener("click", () => render(Greetings.formal));
+        document.getElementById("btnInformal").addEventListener("click", () => render(Greetings.informal));
+        document.getElementById("btnBusiness").addEventListener("click", () => render(Greetings.business));
+    </script>
+</body>
+</html>
